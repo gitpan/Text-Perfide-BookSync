@@ -1,0 +1,318 @@
+#!/usr/bin/perl -ws
+use strict; use warnings;
+use Text::Perfide::BookSync;
+use Data::Dumper;
+
+our($split,$mark,$noclean,$html,$rm,$num,$pfile,$dump,$localrc,$dir,$outfile);
+$rm //= 0;
+my  @pairs;
+
+# my $BOOKSYNC_ENV;
+# if defined($localrc)	{$BOOKSYNC_ENV = load_localrc('.'); }
+# else					{$BOOKSYNC_ENV = { EDITOR => 'vim', BROWSER => 'firefox' }}
+
+my $options = {};
+$options->{dir}  = $dir;
+$options->{dump} = 1 if $dump;
+$options->{num}  = 1 if $num;
+$options->{outfile} = $outfile if $outfile;
+$options->{noclean} = 1 if $noclean;
+$options->{outlist} = [];
+my $fileL = shift;
+my $fileR = shift;
+
+if($fileL =~ /bpairs$/ and not defined($fileR)){
+	print STDERR "Argument '$fileL' contains list of pairs of files to align.\n";
+	my $bpairs = $fileL;
+	open(PAIRS,'<',$bpairs) or die "Could not open file '$bpairs'";
+	@pairs = <PAIRS>;
+}
+elsif(defined($fileR)){
+	print STDERR "Aligning sections from '$fileL' and '$fileR'.\n";
+	push @pairs, "$fileL\t$fileR\n";
+}
+
+foreach (@pairs){
+	chomp;
+	next if (/^$/ or /^#/);
+	my ($fileL,$fileR) = split "\t";
+	print STDERR "Synchronizing files:\n\t'$fileL' and\n\t'$fileR'\n";
+	my $tabsec = { 	left  => { 	file => $fileL,
+								secs => populate($fileL) },
+					right => {	file => $fileR,
+								secs => populate($fileR) }
+		};
+	
+	moreinfosecs($tabsec);
+	my $chunks = calchunks($tabsec,$fileL,$fileR,$options);
+	moreinfochunks($chunks,$tabsec,$options);
+	
+	splitchunks($chunks,$fileL,$fileR,$options) if $split;
+	marksync($chunks,$tabsec,$fileL,$fileR,$options);
+	htmlmatrix($chunks,$tabsec,$options) if $html;
+}
+
+print_outfile($options) if defined($outfile);
+
+sub print_outfile {
+	my $options = shift;
+	my $outfile = $options->{outfile};
+	open my $file, '>', $outfile or die "Could not open '$outfile'\n";
+	foreach(@{$options->{outlist}}){
+		print $file "$_\n";
+	}
+	close $file;
+}
+
+# sub inspect {
+# 	my $opt = shift;
+# 	my $actions = [
+# 		&showmatrix,
+# 		&editdiff,
+# 		&editfiles,
+# 		&accept,
+# 	];
+# 	return $actions->[$opt]();
+# }
+# 
+# sub showmatrix {
+# 	my $html_file = shift;
+# 	my $browser = $BOOKSYNC_ENV{BROWSER};
+# 	qx{$browser '$html_file};
+# }
+# 
+# sub editdiff {
+# 	my $diff_file = shift;
+# 	my $editor =  $BOOKSYNC_ENV{EDITOR};
+# 	qx{'$editor' '$diff_file};
+# }
+# 
+# sub editfiles {
+# 	my @files = @_;
+# 	my $editor =  $BOOKSYNC_ENV{EDITOR};
+# 	my $cmd = qq{'$editor' '}.join "' '",@files."'";
+# 	qx{$cmd};
+# }
+
+
+__END__
+
+# my $prets   = calcprets($idlistA,$idlistB);          # calcula pretendentes das listas A e B (idA == idB)
+# my $ps      = syncpoints($prets);                    # gera hash com os pares de pretendentes (possiveis pontos de sinc)
+# my $dmat    = calcdist($ps);                         # calcula distancia entre cada possivel ponto de sinc e os seguintes
+# my $dmins   = distmin($dmat);                        # selecciona ponto seguinte 'a distancia minima
+# print Dumper $dmat;
+# print (join "\n",sort keys %$dmat);
+# my $pairs = match($prets,$idlistA,$idlistB);      # 
+
+# my $blocks = m1($idlistA,$idlistB);
+#  for my $b (@$blocks){
+#  	print $b->[0][0],"|",$b->[0][1],"\n";
+#  	print $b->[1][0],"|",$b->[1][1],"\n\n";
+#  }
+# Match 0 (abordagem naive, seleciona sempre primeiro pretendente)
+#
+sub m0{
+	my ($idlistA,$idlistB) = @_;
+	my $prets = calcprets($idlistA,$idlistB); # calcula pretendentes das listas A e B (idA == idB)
+	naive_match($prets,$idlistA,$idlistB);
+}
+
+# Match 1
+#
+sub m1{
+	my ($long,$short) = @_;
+	if (scalar @$long < @$short) { return m1($short, $long) }
+	else {
+		my $prets = calcprets($short,$long);
+# print Dumper $prets;
+		my $blocks = [];
+		my $last = [0,0];
+# for(sort keys %$prets){ 	print $_,"\t"; 	print Dumper $prets->{$_}; }
+		for(my $i=0; $i<@$short; $i++){
+# print "$i ",$short->[$i]->{id},"\n"; 	print Dumper $prets->{$i};
+			my @cands_i = grep { defined($prets->{$i}->{$_}) }  keys %{$prets->{$i}}; #FIXME $prets->{$i}->{x} = undef ???
+# print "$i ",$short->[$i]->{id},"\n\t"; for(@cands_i){	print $_," ",$long->[$_]->{id},"\t"; } print "\n\n\n";
+
+			my $nextp = nextpoint(\@cands_i,$last,$i,$prets,$short,$long);
+			if(defined($nextp)){
+				push @$blocks,[$last,$nextp];
+				$last = $nextp;
+			}
+		}
+# print Dumper $blocks;
+	return $blocks;
+	}
+}
+
+sub nextpoint{
+	my ($cands_i,$last,$i,$prets,$short,$long) = @_;
+# print $i,"\n";
+# print "\t",join ' ',@$cands_i,"\n";
+# print "last[1] ",$last->[1],"\n\n---------------------\n";
+	my @cands = grep { $_ > $last->[1] } @$cands_i;
+# print "\t",join ' ',@cands,"\n\n\n";
+	return undef unless (@cands);
+	my $c = min @cands;
+	#rmprets($i,$c,$prets,$short,$long);
+	my $point = [$i,$c];
+	return $point;
+}
+
+# Match 2 (calcula distancia minima de cada ponto possivel de sinc para os seguintes, e selecciona a menor)
+# TODO INCOMPLETO, FALTA ACABAR!
+sub m2{
+	my ($idlistA,$idlistB) = @_;
+	my $prets   = calcprets($idlistA,$idlistB);          # calcula pretendentes das listas A e B (idA == idB)
+	my $ps      = syncpoints($prets);                    # gera hash com os pares de pretendentes (possiveis pontos de sinc)
+	my $dmat    = calcdist($ps);                         # calcula distancia entre cada possivel ponto de sinc e os seguintes
+	my $dmins   = distmin($dmat);                        # selecciona ponto seguinte 'a distancia minima
+}
+
+# TODO
+sub eval_paths{ # Calculates the total distance of each possible path
+
+	# return ($
+}
+
+sub naive_match{ # seleciona sempre primeiro pretendente
+	my ($prets,$long,$short) = @_;
+	if (scalar @$long < @$short) { return match($prets,$short, $long) }
+	else {
+		my $pairs = ();
+		for (my $i=0; $i<@$short; $i++){
+			my $id1  = $short->[$i];
+			for (my $j=0; $j<@$long; $j++){
+				my $id2 = $long->[$j];
+				if (defined($prets->{$i}{$j})){
+					push @$pairs,[$i,$id1,$j,$id2];
+					rmprets($i,$j,$prets,$short,$long);
+				}
+			}
+		}
+ 		return $pairs;
+	}
+}
+
+sub rmprets{
+	my ($i,$j,$prets,$short,$long) = @_;
+	for (my $l=0; $l<@$short; $l++){ undef $prets->{$l}{$j} };
+	for (my $c=0; $c<@$long;  $c++){ undef $prets->{$i}{$c} };
+}
+	
+
+sub calcprets{
+	my ($long,$short) = @_;
+	if (scalar @$long < @$short) { return calcprets($short, $long) }
+	else {
+		my $prets = {};
+
+		for (my $i=0; $i<@$short; $i++){
+			my $idA = $short->[$i]{id};
+			for(my $j=0; $j<@$long; $j++){
+				my $idB = $long->[$j]{id};
+				if ($idA eq $idB)	{ $prets->{$i}{$j}++ }
+			}
+		}
+		return $prets;
+	}
+}
+
+sub syncpoints{
+	my $prets = shift;
+	my $ps = [];
+	for my $id1 (keys %$prets){
+		for my $id2 (keys %{$prets->{$id1}}){
+			push @$ps,[$id1,$id2];
+		}
+	}
+	return $ps; 
+}
+
+sub calcdist{
+	my $ps = shift;
+	my $dmat = {};
+	
+	for(my $i=0; $i<@$ps; $i++){
+		my $p1 = $ps->[$i];
+		for(my $j=0; $j<@$ps; $j++){
+			my $p2 = $ps->[$j];
+			my $dist =$dmat->{$i}{$j}; 
+			my $newdist = abs($p1->[0]-$p2->[0])+abs($p1->[1]-$p2->[1]);
+			if($p2->[0] > $p1->[0] and $p2->[1] > $p1->[1]){
+				unless(defined($dist) and $dist<$newdist){
+					$dmat->{$i}{$j} = $newdist;
+				}
+			}
+		}
+	}
+	return $dmat;
+}
+
+sub distmin{
+	my $dmat = shift;
+	my $dmins = {};
+	for my $p1 (keys %$dmat){
+		$dmins->{$p1} = selectmin($dmat,$p1);
+	}
+	return $dmins;
+}
+
+sub selectmin{
+	my ($dmat,$p1) = @_;
+	my ($id,$mindist) = (-1,100000000);
+	for(keys %{$dmat->{$p1}}){
+		if ($dmat->{$p1}->{$_} < $mindist){
+			$mindist = $dmat->{$p1}->{$_};
+			$id = $_;
+		}
+	}
+	return $id;
+}
+
+=head1 NAME
+
+syncbooks - synchronizes books based on section marks produced with Text::Perfide::BookCleaner
+
+=head1 SYNOPSIS
+
+ syncbooks [options] file.bpairs
+
+ syncbooks [options] file1 file2
+
+=head1 DESCRIPTION
+
+Synchronizes two books (file1 and file2) or several pairs of books,
+    passed in a file with extension "bpairs", each pair in one line with names separated by tab.
+
+=head1 Options
+
+ -split  splits file1 and file2 in numbered files (chunks) where each 
+     file1.lXXX matches file2.rXXX
+
+ -mark inserts synchronization marks <sync id="..."> and generates 
+     file1.sync and file2.sync. This is the default.
+
+ -rm=n do not output the first n chunks to the sync files 
+     (use with -mark)
+
+ -noclean  do not remove any sections marks left after synchronizing (default is to remove)
+
+ -html   treate a C<teste.html> file with alignment matrix.
+
+ -num   ignore section type, use only section numbering to align
+
+ -dump generate file with Dumper from secs and chunks (debug only)
+
+=head1 AUTHOR
+
+Andre Santos, andrefs@cpan.org
+
+=head1 SEE ALSO
+
+perl(1).
+
+Text::Perfide::BookCleaner(3)
+
+=cut      
+
