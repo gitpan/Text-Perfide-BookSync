@@ -1,5 +1,9 @@
 Revision history for Text-Perfide-BookSync
 
-0.01    Date/time
+
+0.01_02  Wed Apr  4 17:14:19 WEST 2012
+		Fixed confusion between bytes and chars
+
+0.01_01 
         First version, released on an unsuspecting world.
 

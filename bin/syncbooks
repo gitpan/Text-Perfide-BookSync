@@ -3,7 +3,7 @@ use strict; use warnings;
 use Text::Perfide::BookSync;
 use Data::Dumper;
 
-our($split,$mark,$noclean,$html,$rm,$num,$pfile,$dump,$localrc,$dir,$outfile);
+our($split,$mark,$noclean,$html,$rm,$num,$pfile,$dump,$localrc,$dir,$outfile,$rep);
 $rm //= 0;
 my  @pairs;
 
@@ -12,9 +12,9 @@ my  @pairs;
 # else					{$BOOKSYNC_ENV = { EDITOR => 'vim', BROWSER => 'firefox' }}
 
 my $options = {};
-$options->{dir}  = $dir;
-$options->{dump} = 1 if $dump;
-$options->{num}  = 1 if $num;
+$options->{dir}  	= $dir;
+$options->{dump} 	= 1 if $dump;
+$options->{num}  	= 1 if $num;
 $options->{outfile} = $outfile if $outfile;
 $options->{noclean} = 1 if $noclean;
 $options->{outlist} = [];
@@ -36,16 +36,17 @@ foreach (@pairs){
 	chomp;
 	next if (/^$/ or /^#/);
 	my ($fileL,$fileR) = split "\t";
-	print STDERR "Synchronizing files:\n\t'$fileL' and\n\t'$fileR'\n";
+	print STDERR "Synchronizing files:\n\tleft:  '$fileL' and\n\tright: '$fileR'\n";
 	my $tabsec = { 	left  => { 	file => $fileL,
 								secs => populate($fileL) },
 					right => {	file => $fileR,
 								secs => populate($fileR) }
 		};
 	
-	moreinfosecs($tabsec);
+	moreinfosecs($tabsec,$options);
 	my $chunks = calchunks($tabsec,$fileL,$fileR,$options);
 	moreinfochunks($chunks,$tabsec,$options);
+	print_report($chunks,$tabsec) if ($rep);
 	
 	splitchunks($chunks,$fileL,$fileR,$options) if $split;
 	marksync($chunks,$tabsec,$fileL,$fileR,$options);
@@ -53,6 +54,44 @@ foreach (@pairs){
 }
 
 print_outfile($options) if defined($outfile);
+
+sub print_report {
+	my ($chunks,$tabsec,$options) = @_;
+	foreach my $c (@$chunks) {
+		print '--------------------',"\n";
+		print "sections:\n";
+		print "\tleft:  ";
+		print join ', ', map { $tabsec->{left}{secs}[$_]{id} } @{$c->{left}{secs}};
+		print "\n";
+		print "\tright: ";
+		print join ', ', map { $tabsec->{right}{secs}[$_]{id} } @{$c->{right}{secs}};
+		print "\n";
+
+		my $wc_left  = $c->{left}{wc};
+		my $wc_right = $c->{right}{wc};
+
+		my $warn = '';
+		if 		($wc_left < 100 and $wc_right < 100) 	{ $warn = 'WARNING: Small chunk (nr words < 100)'; 	}
+		elsif 	(_ratio_mM($wc_left,$wc_right) > 1.0 )	{ $warn = 'ERROR: Word count ratio > 100%';			}
+		elsif 	(_ratio_mM($wc_left,$wc_right) > 0.25)	{ $warn = 'WARNING: Word count ratio > 25%';		}
+
+		print "words:\t$warn\n\tleft:  $wc_left\n";
+		print "\tright:  $c->{right}{wc}\n";
+
+		my $titleL = $tabsec->{left}{secs}[$c->{left}{secs}[0]]{title};
+		$titleL =~ s/\n/ /g;
+		my $titleR = $tabsec->{right}{secs}[$c->{right}{secs}[0]]{title};
+		$titleR =~ s/\n/ /g;
+		print "beginning:\n\tleft:  $titleL\n";
+		print "\tright: $titleR\n";
+	}
+}
+
+sub _ratio_mM {
+	my ($l,$h) = @_;
+	return _ratio_mM($h,$l) if ($l > $h);
+	return ($h-$l)/$l;
+}
 
 sub print_outfile {
 	my $options = shift;
