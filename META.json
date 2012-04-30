@@ -33,7 +33,7 @@
    "provides" : {
       "Text::Perfide::BookSync" : {
          "file" : "lib/Text/Perfide/BookSync.pm",
-         "version" : "0.01_02"
+         "version" : "0.01_03"
       }
    },
    "release_status" : "testing",
@@ -42,5 +42,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01_02"
+   "version" : "0.01_03"
 }

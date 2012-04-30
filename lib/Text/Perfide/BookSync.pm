@@ -4,7 +4,6 @@ use 5.006;
 use strict;
 use warnings;
 use Data::Dumper;
-use Data::Dump qw/dump/;
 use List::Util qw/min/;
 use HTML::Auto qw/matrix h v/;
 use File::Basename;
@@ -18,7 +17,7 @@ Text::Perfide::BookSync - The great new Text::Perfide::BookSync!
 
 =head1 VERSION
 
-Version 0.01_02
+Version 0.01_03
 
 =cut
 
@@ -32,7 +31,7 @@ our @EXPORT = (qw/	htmlmatrix
 					moreinfochunks
 				/);
 
-our $VERSION = '0.01_02';
+our $VERSION = '0.01_03';
 
 =head1 SYNOPSIS
 
