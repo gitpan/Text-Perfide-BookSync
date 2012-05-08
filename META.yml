@@ -1,5 +1,5 @@
 ---
-abstract: 'The great new Text::Perfide::BookSync!'
+abstract: 'Synchronize books in plain text format.'
 author:
   - 'Andre Santos <andrefs@cpan.org>'
 build_requires:
@@ -16,9 +16,10 @@ name: Text-Perfide-BookSync
 provides:
   Text::Perfide::BookSync:
     file: lib/Text/Perfide/BookSync.pm
-    version: 0.01_03
+    version: 0.01_04
 requires:
+  HTML::Auto: 0
   perl: 5.006
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01_03
+version: 0.01_04

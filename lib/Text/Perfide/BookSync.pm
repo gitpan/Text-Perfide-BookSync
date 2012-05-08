@@ -13,7 +13,7 @@ use feature qw/say/;
 
 =head1 NAME
 
-Text::Perfide::BookSync - The great new Text::Perfide::BookSync!
+Text::Perfide::BookSync - Synchronize books in plain text format.
 
 =head1 VERSION
 
@@ -31,23 +31,14 @@ our @EXPORT = (qw/	htmlmatrix
 					moreinfochunks
 				/);
 
-our $VERSION = '0.01_03';
+our $VERSION = '0.01_04';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
-    use Text::Perfide::BookSync;
-
-    my $foo = Text::Perfide::BookSync->new();
-    ...
+Text::Perfide::BookSync performs a structural alignment at section level of books in plain text format.
+The books have to be previously annotated by Text::Perfide::BookCleaner.
 
 =head1 EXPORT
-
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
 
 =head1 SUBROUTINES/METHODS
 =cut

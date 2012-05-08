@@ -13,6 +13,7 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => 5.006,
+		'HTML::Auto' => 0,
     },
     add_to_cleanup      => [ 'Text-Perfide-BookSync-*' ],
     create_makefile_pl => 'traditional',
