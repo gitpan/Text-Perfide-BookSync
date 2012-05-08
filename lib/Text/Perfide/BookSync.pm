@@ -17,7 +17,7 @@ Text::Perfide::BookSync - Synchronize books in plain text format.
 
 =head1 VERSION
 
-Version 0.01_03
+Version 0.01_05
 
 =cut
 
@@ -31,7 +31,7 @@ our @EXPORT = (qw/	htmlmatrix
 					moreinfochunks
 				/);
 
-our $VERSION = '0.01_04';
+our $VERSION = '0.01_05';
 
 =head1 SYNOPSIS
 
