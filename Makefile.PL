@@ -6,8 +6,14 @@ WriteMakefile
   'NAME' => 'Text::Perfide::BookSync',
   'VERSION_FROM' => 'lib/Text/Perfide/BookSync.pm',
   'PREREQ_PM' => {
+                   'Cwd' => 0,
+                   'Data::Dumper' => 0,
+                   'File::Basename' => 0,
+                   'File::Spec' => 0,
                    'HTML::Auto' => 0,
-                   'Test::More' => 0
+                   'List::Util' => 0,
+                   'Test::More' => 0,
+                   'utf8::all' => 0
                  },
   'INSTALLDIRS' => 'site',
   'EXE_FILES' => [

@@ -14,6 +14,12 @@ my $builder = Module::Build->new(
     requires => {
         'perl' => 5.006,
 		'HTML::Auto' => 0,
+		'Cwd'       		=> 0,
+		'Data::Dumper'		=> 0,
+		'File::Basename'	=> 0,
+		'File::Spec'		=> 0,
+		'List::Util'		=> 0,
+		'utf8::all' 		=> 0,
     },
     add_to_cleanup      => [ 'Text-Perfide-BookSync-*' ],
     create_makefile_pl => 'traditional',
