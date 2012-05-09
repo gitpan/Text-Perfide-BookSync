@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Test::More tests => 2;
 use Text::Perfide::BookSync;
-use Data::Dumper;
 
 my $fileL = 't/t5.fileL';
 my $fileR = 't/t5.fileR';

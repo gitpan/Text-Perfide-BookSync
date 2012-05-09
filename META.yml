@@ -16,10 +16,10 @@ name: Text-Perfide-BookSync
 provides:
   Text::Perfide::BookSync:
     file: lib/Text/Perfide/BookSync.pm
-    version: 0.01_05
+    version: 0.01_06
 requires:
   HTML::Auto: 0
   perl: 5.006
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01_05
+version: 0.01_06

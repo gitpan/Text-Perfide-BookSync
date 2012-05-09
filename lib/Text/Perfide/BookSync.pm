@@ -8,7 +8,6 @@ use List::Util qw/min/;
 use HTML::Auto qw/matrix h v/;
 use File::Basename;
 use utf8::all;
-use feature qw/say/;
 
 
 =head1 NAME
@@ -17,7 +16,7 @@ Text::Perfide::BookSync - Synchronize books in plain text format.
 
 =head1 VERSION
 
-Version 0.01_05
+Version 0.01_06
 
 =cut
 
@@ -31,7 +30,7 @@ our @EXPORT = (qw/	htmlmatrix
 					moreinfochunks
 				/);
 
-our $VERSION = '0.01_05';
+our $VERSION = '0.01_06';
 
 =head1 SYNOPSIS
 

@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Test::More tests => 2;
 use Text::Perfide::BookSync;
-use Data::Dumper;
 
 my $fileL = 't/utf8_1.bc_out';
 my $fileR = 't/utf8_2.bc_out';
