@@ -13,7 +13,7 @@ my $builder = Module::Build->new(
     },
     requires => {
         'perl' => 5.006,
-		'HTML::Auto' => 0,
+		'HTML::Auto' => 0.03,
 		'Cwd'       		=> 0,
 		'Data::Dumper'		=> 0,
 		'File::Basename'	=> 0,

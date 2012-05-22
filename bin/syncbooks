@@ -18,7 +18,7 @@ $options->{num}  	= 1 if $num;
 $options->{outfile} = $outfile if $outfile;
 $options->{noclean} = 1 if $noclean;
 $options->{outlist} = [];
-my $fileL = shift;
+my $fileL = shift or die "Please provide a file as argument";
 my $fileR = shift;
 
 if($fileL =~ /bpairs$/ and not defined($fileR)){

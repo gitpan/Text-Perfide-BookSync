@@ -1,5 +1,10 @@
 Revision history for Text-Perfide-BookSync
 
+
+0.01_09  Wed May 23 00:43:39 WEST 2012
+		Added HTML::Auto dependency
+		Fixed several bugs in htmlmatrix output
+
 0.01_03  Wed Apr  4 18:11:28 WEST 2012
 		Manifest updated
 

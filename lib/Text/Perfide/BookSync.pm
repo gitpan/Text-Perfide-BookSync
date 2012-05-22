@@ -16,11 +16,11 @@ Text::Perfide::BookSync - Synchronize books in plain text format.
 
 =head1 VERSION
 
-Version 0.01_07
+Version 0.01_09
 
 =cut
 
-our $VERSION = '0.01_07';
+our $VERSION = '0.01_09';
 
 use base 'Exporter';
 our @EXPORT = (qw/	htmlmatrix
@@ -35,8 +35,9 @@ our @EXPORT = (qw/	htmlmatrix
 
 =head1 SYNOPSIS
 
-Text::Perfide::BookSync performs a structural alignment at section level of books in plain text format.
-The books have to be previously annotated by Text::Perfide::BookCleaner.
+Text::Perfide::BookSync performs a structural alignment at section level of
+books in plain text format.  The books have to be previously annotated by
+Text::Perfide::BookCleaner.
 
 =head1 EXPORT
 
@@ -48,7 +49,8 @@ $rm //= 0;
 
 =head2 htmlmatrix
 
-Generates an HTML file containing a matrix showing the matches between sections of two books.
+Generates an HTML file containing a matrix showing the matches between sections
+of two books.
 
 =cut
 
@@ -82,24 +84,16 @@ sub htmlmatrix{
 
 		for(my $i=0; $i<$ls; $i++){
 			for(my $j=0; $j<$rs; $j++){
-				my $more_info = '<span>
-									<table class="more_info">
-									<tr>
-										<th class="more_info">'.$lines[$l+$i].'</th>
-										<td class="large">'.$more_info->{left}[$l+$i].'</td>
-									</tr>
-									<tr>
-										<th class="more_info">'.$cols[$c+$j].'</th>
-										<td class="large">'.$more_info->{right}[$c+$j].'</td>
-									</tr>
-									</table>
-								</span>';
-
 				$data->[$l+$i][$c+$j] = { 
-					v => "$ccount $more_info", 
-					a => { 
-						style => $style, 
-						class => 'more_info'} 
+					v => $ccount,
+					a => { style => $style },
+					more_info => matrix(
+										[],		# column titles
+										[$lines[$l+$i],$cols[$c+$j]], 	# line titles
+										[[ $more_info->{left}[$l+$i]],
+										 [$more_info->{right}[$c+$j]]],
+										 { css => ".more_info th.empty { display:none; }\n"},
+									),
 				};
 			}
 		}
@@ -120,7 +114,9 @@ sub htmlmatrix{
 
 =head2 marksync
 
-Given two files FILEL and FILER, creates new versions of these files (FILEL.sync and FILER.sync) with synchronization tags <sync id="x"> marking the points where the texts synchronize.
+Given two files FILEL and FILER, creates new versions of these files
+(FILEL.sync and FILER.sync) with synchronization tags <sync id="x"> marking the
+points where the texts synchronize.
 
 =cut
 
@@ -198,7 +194,8 @@ sub marksync{
 
 =head2 splitchunks
 
-Given two files FILEL and FILER, splits them by their synchronization points, storing each chunk in a file, where each FILEL.cXX matches FILER.cXX.
+Given two files FILEL and FILER, splits them by their synchronization points,
+storing each chunk in a file, where each FILEL.cXX matches FILER.cXX.
 
 =cut
 
@@ -235,7 +232,8 @@ sub splitchunks{
 
 =head2 calchunks
 
-Calculates chunks for a given pair of files. A chunk is a set of consecutive sections, which are grouped in order to match the corresponding chunk.
+Calculates chunks for a given pair of files. A chunk is a set of consecutive
+sections, which are grouped in order to match the corresponding chunk.
 
 =cut
 
@@ -315,7 +313,9 @@ sub calchunks{
 
 =head2 populate
 
-From a given file in which sections have been delimited with Text::Perfide::BookCleaner, creates and returns a list containing information about the sections of this file: id, start offset and end offset.
+From a given file in which sections have been delimited with
+Text::Perfide::BookCleaner, creates and returns a list containing information
+about the sections of this file: id, start offset and end offset.
 
 =cut
 
@@ -424,13 +424,16 @@ sub _dump2file {
 		
 sub _numcmp{
 	my ($a,$b) = @_;
-	return _numcmp($b,$a) if ($a>$b);
+	return _numcmp($b,$a) 	if ($a>$b);
+	return 1 				if ($a==0 and $b==0);
+	return 10 				if ($b==0);
 	return $a/$b;
 }
 
 =head1 AUTHOR
 
 Andre Santos, C<< <andrefs at cpan.org> >>
+Jose Joao Almeida, C<< <jj at di.uminho.pt> >>
 
 =head1 BUGS
 
@@ -438,45 +441,12 @@ Please report any bugs or feature requests to C<bug-text-perfide-booksync at rt.
 the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Text-Perfide-BookSync>.  I will be notified, and then you'll
 automatically be notified of progress on your bug as I make changes.
 
-
-
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Text::Perfide::BookSync
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker (report bugs here)
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Text-Perfide-BookSync>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Text-Perfide-BookSync>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Text-Perfide-BookSync>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Text-Perfide-BookSync/>
-
-=back
-
-
 =head1 ACKNOWLEDGEMENTS
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011 Andre Santos.
+Copyright 2011 Project Natura.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

@@ -30,7 +30,7 @@
             "Data::Dumper" : "0",
             "File::Basename" : "0",
             "File::Spec" : "0",
-            "HTML::Auto" : "0",
+            "HTML::Auto" : "0.03",
             "List::Util" : "0",
             "perl" : "5.006",
             "utf8::all" : "0"
@@ -40,7 +40,7 @@
    "provides" : {
       "Text::Perfide::BookSync" : {
          "file" : "lib/Text/Perfide/BookSync.pm",
-         "version" : "0.01_07"
+         "version" : "0.01_09"
       }
    },
    "release_status" : "testing",
@@ -49,5 +49,5 @@
          "http://dev.perl.org/licenses/"
       ]
    },
-   "version" : "0.01_07"
+   "version" : "0.01_09"
 }

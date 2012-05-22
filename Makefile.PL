@@ -10,7 +10,7 @@ WriteMakefile
                    'Data::Dumper' => 0,
                    'File::Basename' => 0,
                    'File::Spec' => 0,
-                   'HTML::Auto' => 0,
+                   'HTML::Auto' => '0.03',
                    'List::Util' => 0,
                    'Test::More' => 0,
                    'utf8::all' => 0
